@@ -45,6 +45,12 @@
   # Enable Sound Open Firmware for digital mic array (DMIC)
   hardware.enableAllFirmware = true;
 
+  # Bluetooth in GNOME
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true; # Ensures adapter powers on at startup
+  };
+
   # Ensure ThinkPad ACPI driver is loaded for Fn hotkeys and mic-mute LED
   boot.kernelModules = [ "thinkpad_acpi" ];
 
