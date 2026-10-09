@@ -42,16 +42,23 @@
     LC_TIME = "en_US.UTF-8";
   };
 
+  # Enable Sound Open Firmware for digital mic array (DMIC)
+  hardware.enableAllFirmware = true;
+
+  # Ensure ThinkPad ACPI driver is loaded for Fn hotkeys and mic-mute LED
+  boot.kernelModules = [ "thinkpad_acpi" ];
+
   # Enable the GNOME Desktop Environment.
   services.displayManager.gdm.enable = true;
   services.desktopManager.gnome.enable = true;
   services.xserver.enable = true; 
 
   # Allow non-root access for Aillio Bullet USB controller
-    services.udev.extraRules = ''
-      SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5741", MODE="0666", GROUP="dialout"
-       SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="a27e", MODE="0666", GROUP="dialout"
-    '';
+  services.udev.extraRules = ''
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5741", MODE="0666", GROUP="dialout"
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="a27e", MODE="0666", GROUP="dialout"
+    ACTION=="add|chaange", SUBSYSTEM=="leds", KERNEL=="*micmute", RUN+="${pkgs.coreutils}/bin/chmod a+w /sys/class/leds/%k/brightness"
+  '';
 
 
   # Configure keymap in X11
@@ -71,8 +78,27 @@
     alsa.enable = true;
     alsa.support32Bit = true;
     pulse.enable = true;
+    wireplumber.enable = true;
     # If you want to use JACK applications, uncomment this
     # jack.enable = true;
+    extraConfig.pipewire."99-mic-echo-cancel" = {
+      "context.modules" = [
+        {
+          name = "libpipewire-module-echo-cancel";
+          args = {
+            "source.props" = {
+              "node.name" = "echo-cancel-source";
+              "node.description" = "ThinkPad PDM Mic (Echo Cancel & AGC)";
+            };
+            "aec.args" = {
+              "webrtc.gain_control" = true;
+              "webrtc.noise_suppression" = true;
+              "webrtc.voice_detection" = true;
+            };
+          };
+        }
+      ];
+    };
   };
 
   # Enable touchpad support (enabled default in most desktopManager).
@@ -102,6 +128,34 @@
     };
   }; 
   
+  # Real-time microphone mute LED synchronization service
+  systemd.user.services.thinkpad-mic-led-sync = {
+    description = "Sync ThinkPad Mic Mute LED with PipeWire Default Source";
+    after = [ "pipewire.service" "wireplumber.service" ];
+    wantedBy = [ "default.target" ];
+    path = with pkgs; [ pulseaudio coreutils gnugrep ];
+    script = ''
+      # Helper to update LED based on default source mute status
+      update_led() {
+        if pactl get-source-mute @DEFAULT_SOURCE@ 2>/dev/null | grep -q "yes"; then
+          echo 1 > /sys/class/leds/platform::micmute/brightness 2>/dev/null || true
+        else
+          echo 0 > /sys/class/leds/platform::micmute/brightness 2>/dev/null || true
+        fi
+      }
+
+      # Initial state check
+      update_led
+
+      # React instantly to audio source state changes
+      pactl subscribe 2>/dev/null | while read -r event; do
+        if echo "$event" | grep -q "source"; then
+          update_led
+        fi
+      done
+    '';
+  };
+
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users."david" = {
     isNormalUser = true;
@@ -170,8 +224,11 @@
     pkgs.evsieve
     bitwarden-desktop
     vscode
-#    quickdrag # Gnome click lock
-#    quickdrag end
+    sof-firmware
+    alsa-utils
+    pavucontrol
+    ffmpeg
+    pulseaudio
   ];
 
   # Some programs need SUID wrappers, can be configured further or are
