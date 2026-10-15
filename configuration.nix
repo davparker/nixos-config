@@ -4,6 +4,38 @@
 
 { config, pkgs, ... }:
 
+let
+  # 1. Fetch the official Gemini icon
+  gemini-icon = pkgs.fetchurl {
+    url = "https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg";
+    # sha256 = "sha256-b8kP257Zc03iB7U64zLz1GfK6fP3Z2JkK0qO/mP319Q=";
+    sha256 = "sha256-AYIUlFk7gf/X2g4IKH1HNTBP9ikqaQNFMyi50Xzzh5k=";
+    # hash = pkgs.lib.fakeHash;
+  };
+
+  # 2. Build the desktop entry and link the icon into share/icons
+  gemini-desktop = pkgs.symlinkJoin {
+    name = "gemini-desktop";
+    paths = [
+      (pkgs.makeDesktopItem {
+        name = "gemini";
+        desktopName = "Google Gemini";
+        genericName = "AI Assistant";
+        comment = "Google Gemini Conversational AI";
+        exec = "${pkgs.brave}/bin/brave --app=https://gemini.google.com/app %U";
+        icon = "google-gemini";
+        terminal = false;
+        categories = [ "Network" "Utility" "Chat" ];
+        startupWMClass = "gemini.google.com";
+      })
+    ];
+    postBuild = ''
+      mkdir -p $out/share/icons/hicolor/scalable/apps
+      ln -s ${gemini-icon} $out/share/icons/hicolor/scalable/apps/google-gemini.svg
+    '';
+  };
+in
+
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -224,6 +256,7 @@
     tailscale
     appimage-run
     brave
+    gemini-desktop
     git
     hicolor-icon-theme
     adwaita-icon-theme
