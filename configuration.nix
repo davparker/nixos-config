@@ -65,6 +65,7 @@
     };
     interactiveShellInit = ''
       export EDITOR="nano"
+      fastfetch
     '';
   };
 

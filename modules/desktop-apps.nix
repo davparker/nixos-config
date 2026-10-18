@@ -1,6 +1,10 @@
 { pkgs, ... }:
 
 let
+  # 1. Custom RoasTime derivation wrapped from AppImage
+  roastime = pkgs.callPackage ../pkgs/roastime.nix { };
+
+  #2. Custom Gemini desktop entry
   gemini-icon = pkgs.fetchurl {
     url = "https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg";
     sha256 = "sha256-AYIUlFk7gf/X2g4IKH1HNTBP9ikqaQNFMyi50Xzzh5k=";
@@ -47,10 +51,12 @@ in
   environment.systemPackages = with pkgs; [
     vim
     wget
+    fastfetch            # system info summary tool
     tailscale
     appimage-run
     brave
     gemini-desktop
+    roastime             # Built natively from roastime.nix
     git
     hicolor-icon-theme
     adwaita-icon-theme
