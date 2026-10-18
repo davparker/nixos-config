@@ -2,7 +2,7 @@
 
 let
   # 1. Custom RoasTime derivation wrapped from AppImage
-  roastime = pkgs.callPackage ../pkgs/roastime.nix { };
+  # roastime = pkgs.callPackage ../pkgs/roastime.nix { };
 
   #2. Custom Gemini desktop entry
   gemini-icon = pkgs.fetchurl {
@@ -56,7 +56,7 @@ in
     appimage-run
     brave
     gemini-desktop
-    roastime             # Built natively from roastime.nix
+    roastime             # Built natively from roastime.nix, imported pkgs overlay
     git
     hicolor-icon-theme
     adwaita-icon-theme

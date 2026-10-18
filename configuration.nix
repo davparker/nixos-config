@@ -69,8 +69,15 @@
     '';
   };
 
-  # Nix Package Manager Settings
+  # Nix Package Manager - allow unfree
   nixpkgs.config.allowUnfree = true;
+
+  # Expose custom derivations into pkgs.*
+  nixpkgs.overlays = [
+    (final: prev: import ./pkgs final)
+  ];
+
+  # Enable nix garbage collect
   nix.gc = {
     automatic = true;
     dates = "weekly";
