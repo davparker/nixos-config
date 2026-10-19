@@ -21,7 +21,12 @@
   # Networking
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
-  services.tailscale.enable = true;
+
+  # Tailscale
+  services.tailscale = {
+    enable = true;
+    useRoutingFeatures = "both"; # Options: "client", "server", or "both"
+  };
 
   networking.firewall = {
     allowedUDPPorts = [ config.services.tailscale.port ];
