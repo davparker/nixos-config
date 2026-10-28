@@ -76,6 +76,14 @@
   # Expose custom derivations into pkgs.*
   nixpkgs.overlays = [
     (final: prev: import ./pkgs final)
+
+    # Pin Tailscale to nixos-unstable
+    (final: prev: {
+      tailscale = (import <unstable> {
+        system = prev.system;
+        config = config.nixpkgs.config;
+      }).tailscale;
+    })
   ];
 
   # Enable nix garbage collect
