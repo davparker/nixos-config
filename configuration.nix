@@ -6,45 +6,21 @@
     ./modules/accessibility.nix
     ./modules/thinkpad-hardware.nix
     ./modules/desktop-apps.nix
+    ./modules/tailscale.nix
   ];
 
   # Bootloader
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Tailscale forwarding
-  boot.kernel.sysctl = {
-    "net.ipv4.ip_forward" = 1;
-    "net.ipv6.conf.all.forwarding" = 1;
-
-    # Increase maximum buffer size limits (e.g. up to 16MB)
-    "net.core.rmem_max" = 16777216;
-    "net.core.wmem_max" = 16777216;
-
-    # Increase default socket buffer sizes (e.g. up to 1MB)
-    "net.core.rmem_default" = 1048576;
-    "net.core.wmem_default" = 1048576;
-
-    # Increase maximum backlog of queued incoming packets
-    "net.core.netdev_max_backlog" = 10000;  
-  };
-
   # Networking
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
 
-  # Tailscale
-  services.tailscale = {
-    enable = true;
-    useRoutingFeatures = "both"; # Options: "client", "server", or "both"
-  };
-
+  # Base Firewall (Tailscale-specific rules are merged from modules/tailscale.nix)
   networking.firewall = {
     enable = true;
     allowedTCPPorts = [ 22 ];
-    allowedUDPPorts = [ config.services.tailscale.port ];
-    trustedInterfaces = [ "tailscale0" ];
-    checkReversePath = "loose";
   };
 
   # Localization & Time
