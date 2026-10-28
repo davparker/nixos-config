@@ -40,8 +40,11 @@
   };
 
   networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 22 ];
     allowedUDPPorts = [ config.services.tailscale.port ];
     trustedInterfaces = [ "tailscale0" ];
+    checkReversePath = "loose";
   };
 
   # Localization & Time
