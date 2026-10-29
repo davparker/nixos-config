@@ -51,6 +51,33 @@
   services.printing.enable = true;
   services.openssh.enable = true;
 
+  # Disable Gnome power saving
+  services.power-profiles-daemon.enable = false;
+
+  services.tlp = {
+    enable = true;
+    settings = {
+      # CPU governors
+      CPU_SCALING_GOVERNOR_ON_AC = "performance";
+      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+      CPU_BOOST_ON_AC = 1;
+
+      # Platform profiles (ThinkPad ACPI)
+      PLATFORM_PROFILE_ON_AC = "performance";
+
+      # Storage and bus power saving
+      AHCI_RUNTIME_PM_ON_AC = "on";
+      RUNTIME_PM_ON_AC = "on";
+      PCIE_ASPM_ON_AC = "performance";
+
+      # Wi-Fi
+      WIFI_PWR_ON_AC = "off";
+
+      # Audio
+      SOUND_POWER_SAVE_ON_AC = 0;
+    };
+  };
+
   # User Configuration
   users.users."david" = {
     isNormalUser = true;
