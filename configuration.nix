@@ -51,9 +51,32 @@
   services.printing.enable = true;
   services.openssh.enable = true;
 
+  # Aillio Bulllet USB
+  services.udev.extraRules = ''
+    # Aillio Bullet R1 (Normal mode: 0483:a27e and legacy 0483:5740)
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="a27e", MODE="0666", GROUP="dialout", ENV{ID_MM_DEVICE_IGNORE}="1"
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="5740", MODE="0666", GROUP="dialout", ENV{ID_MM_DEVICE_IGNORE}="1"
+    KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="0483", MODE="0666", GROUP="dialout", ENV{ID_MM_DEVICE_IGNORE}="1"
+
+    # Aillio Bullet DFU Bootloader Mode (Comms firmware flashing)
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="df11", MODE="0666", GROUP="dialout"
+  '';
+
+  # Enable nix-ld Roastime USB
+  programs.nix-ld = {
+    enable = true;
+      libraries = with pkgs; [
+      stdenv.cc.cc.lib
+      zlib
+      libusb1
+      systemd # provides libudev
+      glibc
+    ];
+  };
+
   # Disable Gnome power saving
   services.power-profiles-daemon.enable = false;
-
+  
   services.tlp = {
     enable = true;
     settings = {

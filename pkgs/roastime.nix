@@ -1,19 +1,17 @@
 { lib
+, buildFHSEnv
 , appimageTools
 , fetchurl
-, udev
-, libusb1
+, writeShellScript
 }:
 
 let
   pname = "roastime";
-  version = "latest"; # Set a specific version if preferred
+  version = "latest";
 
   src = fetchurl {
     url = "https://api.roast.world/api/v3/roastime/main/lin/x64";
     name = "roastime.AppImage";
-    # If the hash changes or mismatches, leave hash = "" or hash = lib.fakeHash
-    # to let nix tell you the exact SRI string.
     hash = "sha256-sAG7kPUcfh8wXgbIgyPYFxa8ATMeoeyOoMG76LeDol8=";
   };
 
@@ -21,23 +19,38 @@ let
     inherit pname version src;
   };
 in
-appimageTools.wrapType2 {
-  inherit pname version src;
+buildFHSEnv (appimageTools.defaultFhsEnvArgs // {
+  inherit pname version;
 
-  # Include extra libraries needed for hardware communication (USB connection to Bullet)
-  extraPkgs = pkgs: [
-    udev
-    libusb1
+  extraBwrapArgs = [
+    "--bind-try" "/etc/nixos" "/etc/nixos"
+    "--dev-bind" "/dev" "/dev"
+    "--ro-bind-try" "/run/udev" "/run/udev"
   ];
 
-  extraInstallCommands = ''
-    # Install desktop file and icons extracted from the AppImage
-    install -m 444 -D ${appimageContents}/roastime.desktop -t $out/share/applications
-    cp -r ${appimageContents}/usr/share/icons $out/share/ 2>/dev/null || true
+  targetPkgs = pkgs: (appimageTools.defaultFhsEnvArgs.targetPkgs pkgs) ++ (with pkgs; [
+    libusb1
+    systemd # provides libudev
+  ]);
 
-    # Adjust Exec in desktop file to point to the wrapped binary
+  runScript = writeShellScript "roastime-run" ''
+    exec ${appimageContents}/AppRun "$@"
+  '';
+
+  extraInstallCommands = ''
+    mkdir -p $out/share/applications
+    mkdir -p $out/share/icons
+
+    # Desktop entry
+    install -m 444 -D ${appimageContents}/roastime.desktop $out/share/applications/roastime.desktop 2>/dev/null || \
+    install -m 444 -D ${appimageContents}/RoasTime.desktop $out/share/applications/roastime.desktop 2>/dev/null || true
+
     substituteInPlace $out/share/applications/roastime.desktop \
-      --replace-quiet 'Exec=AppRun' 'Exec=roastime' || true
+      --replace-quiet 'Exec=AppRun' "Exec=$out/bin/${pname}" \
+      --replace-quiet 'Exec=roastime' "Exec=$out/bin/${pname}" || true
+
+    # Icons
+    cp -r ${appimageContents}/usr/share/icons $out/share/ 2>/dev/null || true
   '';
 
   meta = with lib; {
@@ -46,4 +59,4 @@ appimageTools.wrapType2 {
     platforms = [ "x86_64-linux" ];
     license = licenses.unfree;
   };
-}
+})
