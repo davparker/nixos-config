@@ -3,6 +3,7 @@
 , appimageTools
 , fetchurl
 , writeShellScript
+, unzip
 }:
 
 let
@@ -26,14 +27,36 @@ buildFHSEnv (appimageTools.defaultFhsEnvArgs // {
     "--bind-try" "/etc/nixos" "/etc/nixos"
     "--dev-bind" "/dev" "/dev"
     "--ro-bind-try" "/run/udev" "/run/udev"
+    "--tmpfs" "/run/dbus"
   ];
 
   targetPkgs = pkgs: (appimageTools.defaultFhsEnvArgs.targetPkgs pkgs) ++ (with pkgs; [
     libusb1
     systemd # provides libudev
+    unzip
   ]);
 
   runScript = writeShellScript "roastime-run" ''
+    DEPS_DIR="$HOME/.config/roastime/deps"
+
+    # 1. Automatically extract pending downloaded comms updates if present
+    if [ -f "$DEPS_DIR/roastime-comms-linux-x64.zip" ]; then
+      ${unzip}/bin/unzip -qo "$DEPS_DIR/roastime-comms-linux-x64.zip" -d "$DEPS_DIR" 2>/dev/null || true
+    fi
+
+    # 2. Ensure executable permissions and create generic symlink
+    if [ -d "$DEPS_DIR" ]; then
+      chmod +x "$DEPS_DIR"/roastime-* 2>/dev/null || true
+      ln -sf "$DEPS_DIR/roastime-comms-linux-x64" "$DEPS_DIR/roastime-comms" 2>/dev/null || true
+    fi
+
+    # 3. Ensure the comms daemon is running on port 5005
+    if ! pgrep -f "roastime-comms" >/dev/null 2>&1; then
+      if [ -x "$DEPS_DIR/roastime-comms-linux-x64" ]; then
+        "$DEPS_DIR/roastime-comms-linux-x64" &
+      fi
+    fi
+
     exec ${appimageContents}/AppRun "$@"
   '';
 
