@@ -14,7 +14,6 @@
   # USB rules: Aillio Bullet roaster access & Mic-mute LED write permissions
   services.udev.extraRules = ''
     SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5741", MODE="0666", GROUP="dialout"
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="a27e", MODE="0666", GROUP="dialout"
     ACTION=="add|change", SUBSYSTEM=="leds", KERNEL=="*micmute", RUN+="${pkgs.coreutils}/bin/chmod a+w /sys/class/leds/%k/brightness"
   '';
 
