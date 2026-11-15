@@ -13,6 +13,9 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # Enable flakes
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
   # Networking
   networking.hostName = "nixos";
   networking.networkmanager.enable = true;
@@ -123,16 +126,9 @@
   # Nix Package Manager - allow unfree
   nixpkgs.config.allowUnfree = true;
 
-  # Expose custom derivations into pkgs.*
   nixpkgs.overlays = [
-    (final: prev: import ./pkgs final)
-
-    # Pin Tailscale to nixos-unstable
     (final: prev: {
-      tailscale = (import <unstable> {
-        system = prev.system;
-        config = config.nixpkgs.config;
-      }).tailscale;
+      roastime = final.callPackage ./pkgs/roastime.nix { };
     })
   ];
 
