@@ -37,6 +37,7 @@ buildFHSEnv (appimageTools.defaultFhsEnvArgs // {
   ]);
 
   runScript = writeShellScript "roastime-run" ''
+    export APPDIR="${appimageContents}"
     DEPS_DIR="$HOME/.config/roastime/deps"
 
     # 1. Automatically extract pending downloaded comms updates if present
