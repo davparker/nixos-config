@@ -50,13 +50,6 @@ buildFHSEnv (appimageTools.defaultFhsEnvArgs // {
       ln -sf "$DEPS_DIR/roastime-comms-linux-x64" "$DEPS_DIR/roastime-comms" 2>/dev/null || true
     fi
 
-    # 3. Ensure the comms daemon is running on port 5005
-    if ! pgrep -f "roastime-comms" >/dev/null 2>&1; then
-      if [ -x "$DEPS_DIR/roastime-comms-linux-x64" ]; then
-        "$DEPS_DIR/roastime-comms-linux-x64" &
-      fi
-    fi
-
     exec ${appimageContents}/AppRun "$@"
   '';
 
