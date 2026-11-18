@@ -3,10 +3,10 @@
 {
   imports = [
     ./hardware-configuration.nix
-    ./modules/accessibility.nix
-    ./modules/thinkpad-hardware.nix
-    ./modules/desktop-apps.nix
-    ./modules/tailscale.nix
+    ../../modules/accessibility.nix
+    ../../modules/thinkpad-hardware.nix
+    ../../modules/desktop-apps.nix
+    ../../modules/tailscale.nix
   ];
 
   # Bootloader
@@ -128,7 +128,7 @@
 
   nixpkgs.overlays = [
     (final: prev: {
-      roastime = final.callPackage ./pkgs/roastime.nix { };
+      roastime = final.callPackage ../../pkgs/roastime.nix { };
     })
   ];
 

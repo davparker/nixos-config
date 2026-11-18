@@ -67,5 +67,6 @@ in
     pavucontrol
     ffmpeg
     pulseaudio
+    tree
   ];
 }
