@@ -17,7 +17,7 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Networking
-  networking.hostName = "nixos";
+  networking.hostName = "t14-g7";
   networking.networkmanager.enable = true;
 
   # Base Firewall (Tailscale-specific rules are merged from modules/tailscale.nix)
