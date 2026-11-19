@@ -1,10 +1,7 @@
 { pkgs, ... }:
 
 let
-  # 1. Custom RoasTime derivation wrapped from AppImage
-  # roastime = pkgs.callPackage ../pkgs/roastime.nix { };
-
-  #2. Custom Gemini desktop entry
+  # Custom Gemini desktop entry
   gemini-icon = pkgs.fetchurl {
     url = "https://www.gstatic.com/lamda/images/gemini_sparkle_v002_d4735304ff6292a690345.svg";
     sha256 = "sha256-AYIUlFk7gf/X2g4IKH1HNTBP9ikqaQNFMyi50Xzzh5k=";
@@ -32,6 +29,13 @@ let
   };
 in
 {
+  # 1. Custom RoasTime overlay (must live inside the returned module attrset, after `in`)
+  nixpkgs.overlays = [
+    (final: prev: {
+      roastime = final.callPackage ../pkgs/roastime.nix { };
+    })
+  ];
+
   # AppImage binary format support (for RoasTime)
   programs.appimage = {
     enable = true;

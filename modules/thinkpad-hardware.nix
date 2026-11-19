@@ -11,9 +11,18 @@
     powerOnBoot = true;
   };
 
-  # USB rules: Aillio Bullet roaster access & Mic-mute LED write permissions
+  # USB rules: Aillio Bullet roaster access (runtime, serial, bootloader/DFU) & Mic-mute LED write permissions
   services.udev.extraRules = ''
-    SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="5741", MODE="0666", GROUP="dialout"
+    # Aillio Bullet R1 (Normal mode: 0483:a27e and legacy 0483:5740)
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="a27e", MODE="0666", GROUP="dialout", ENV{ID_MM_DEVICE_IGNORE}="1"
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="5740", MODE="0666", GROUP="dialout", ENV{ID_MM_DEVICE_IGNORE}="1"
+    KERNEL=="ttyACM[0-9]*", ATTRS{idVendor}=="0483", MODE="0666", GROUP="dialout", ENV{ID_MM_DEVICE_IGNORE}="1"
+
+    # Aillio Bullet DFU / Bootloader Mode (Comms firmware flashing)
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="5741", MODE="0666", GROUP="dialout"
+    SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="df11", MODE="0666", GROUP="dialout"
+
+    # ThinkPad Mic-mute LED write permissions
     ACTION=="add|change", SUBSYSTEM=="leds", KERNEL=="*micmute", RUN+="${pkgs.coreutils}/bin/chmod a+w /sys/class/leds/%k/brightness"
   '';
 
