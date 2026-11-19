@@ -115,7 +115,7 @@
   programs.bash = {
     shellAliases = {
       ll = "ls -la";
-      rebuild = "sudo nixos-rebuild switch";
+      rebuild = "sudo nixos-rebuild switch --flake /home/david/nixos-config";
     };
     interactiveShellInit = ''
       export EDITOR="nano"
