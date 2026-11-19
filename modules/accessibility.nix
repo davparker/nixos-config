@@ -18,10 +18,13 @@
         import time
         from evdev import InputDevice, UInput, ecodes, list_devices
 
+        TRACKPOINT_NAMES = ("trackpoint", "ps/2 logitech mouse")
+
         dev = None
         for path in list_devices():
             candidate = InputDevice(path)
-            if "TrackPoint" in candidate.name:
+            name_lower = candidate.name.lower()
+            if any(tag in name_lower for tag in TRACKPOINT_NAMES) and ecodes.EV_REL in candidate.capabilities():
                 dev = candidate
                 break
 
