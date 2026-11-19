@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 {
+  boot.kernelModules = [ "uinput" ];
+
   # Native Windows-style ClickLock daemon for ThinkPad TrackPoint
   systemd.services.windows-clicklock = {
     description = "Windows ClickLock Daemon for TrackPoint";
@@ -9,21 +11,22 @@
     serviceConfig = {
       Restart = "always";
       RestartSec = "2s";
+
       ExecStart = "${pkgs.writeScriptBin "clicklock" ''
         #!${pkgs.python3.withPackages (ps: [ ps.evdev ])}/bin/python3
-        import glob
         import sys
         import time
-        from evdev import InputDevice, UInput, ecodes
+        from evdev import InputDevice, UInput, ecodes, list_devices
 
-        candidates = glob.glob("/dev/input/by-path/*-serio-1-event-mouse")
-        if not candidates:
-            candidates = glob.glob("/dev/input/by-path/*-mouse")
+        dev = None
+        for path in list_devices():
+            candidate = InputDevice(path)
+            if "TrackPoint" in candidate.name:
+                dev = candidate
+                break
 
-        if not candidates:
+        if dev is None:
             sys.exit(1)
-
-        dev = InputDevice(candidates[0])
 
         caps = {
             ecodes.EV_KEY: [
