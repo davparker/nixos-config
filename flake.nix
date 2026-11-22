@@ -19,6 +19,7 @@
       nixosConfigurations = {
         t14-g7 = mkHost ./hosts/t14-g7/configuration.nix;
         x1c-g4 = mkHost ./hosts/x1c-g4/configuration.nix;
+        p1-g4 = mkHost ./hosts/p1-g4/configuration.nix;
       };
     };
 }
