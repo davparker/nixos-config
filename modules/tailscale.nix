@@ -36,4 +36,10 @@
     # Loose reverse path filtering avoids dropped packets when routing traffic
     checkReversePath = "loose";
   };
+
+  # Enable RustDesk connectivity over Tailscale
+  networking.firewall.interfaces."tailscale0" = {
+    allowedTCPPorts = [ 21115 21116 21117 21118 21119 ];
+    allowedUDPPorts = [ 21116 ];
+};
 }
