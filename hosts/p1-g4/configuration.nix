@@ -26,6 +26,11 @@
     allowedTCPPorts = [ 22 ];
   };
 
+  # Advertise VMware NAT subnet (vmnet8) over Tailscale from p1-g4 only
+  services.tailscale.extraUpFlags = [
+    "--advertise-routes=172.16.4.0/24"
+  ];
+
   # Pin to 6.12 LTS and generate dummy .ko.cer files for VMware's out-of-tree vmmon/vmnet modules
   boot.kernelPackages = pkgs.linuxPackages_6_12.extend (kfinal: kprev: {
     vmware = kprev.vmware.overrideAttrs (old: {
