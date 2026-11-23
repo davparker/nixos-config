@@ -110,6 +110,12 @@
     SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="df11", MODE="0666", GROUP="dialout"
   '';
 
+  # VMware creates /dev/vmnet* via mknod (bypassing udev); set group/mode after vmware-networks starts
+  systemd.services.vmware-networks.postStart = ''
+    ${pkgs.coreutils}/bin/chgrp wireshark /dev/vmnet*
+    ${pkgs.coreutils}/bin/chmod 0660 /dev/vmnet*
+  '';
+
   # Enable nix-ld Roastime USB
   programs.nix-ld = {
     enable = true;
