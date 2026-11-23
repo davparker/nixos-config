@@ -72,5 +72,6 @@ in
     ffmpeg
     pulseaudio
     tree
+    rustdesk-flutter
   ];
 }

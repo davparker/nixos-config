@@ -187,6 +187,11 @@
     })
   ];
 
+  # Install VMware app
+  environment.systemPackages = with pkgs; [
+    vmware-workstation
+  ];
+
   # Enable nix garbage collect
   nix.gc = {
     automatic = true;
