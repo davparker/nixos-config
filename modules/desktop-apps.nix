@@ -51,6 +51,12 @@ in
     ];
   };
 
+  # Enable RustDesk service
+  services.rustdesk = {
+    enable = true;
+    package = pkgs.rustdesk-flutter;
+  };
+
   # Global system packages
   environment.systemPackages = with pkgs; [
     vim
