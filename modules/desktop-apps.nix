@@ -51,10 +51,20 @@ in
     ];
   };
 
-  # Enable RustDesk service
-  services.rustdesk = {
-    enable = true;
-    package = pkgs.rustdesk-flutter;
+  # Enable RustDesk Remote Desktop service
+  systemd.services.rustdesk = {
+    description = "RustDesk Remote Desktop Service";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "network-online.target" "tailscaled.service" "display-manager.service" ];
+    wants = [ "network-online.target" "tailscaled.service" ];
+
+    serviceConfig = {
+      Type = "simple";
+      ExecStart = "${pkgs.rustdesk-flutter}/bin/rustdesk --service";
+      Restart = "always";
+      RestartSec = 5;
+      KillMode = "mixed";
+    };
   };
 
   # Global system packages
