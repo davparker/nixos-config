@@ -41,5 +41,20 @@
   networking.firewall.interfaces."tailscale0" = {
     allowedTCPPorts = [ 22 21115 21116 21117 21118 21119 ];
     allowedUDPPorts = [ 21116 ];
-};
+  };
+
+  # Tailscale routing config
+  systemd.services.tailscale-lan-bypass = {
+    description = "Prefer main routing table for local 192.168.1.0/24 subnet over Tailscale";
+    after = [ "network-online.target" "tailscaled.service" ];
+    wants = [ "network-online.target" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      ExecStartPre = "-${pkgs.iproute2}/bin/ip rule del to 192.168.1.0/24 lookup main priority 2500";
+      ExecStart = "${pkgs.iproute2}/bin/ip rule add to 192.168.1.0/24 lookup main priority 2500";
+      ExecStop = "-${pkgs.iproute2}/bin/ip rule del to 192.168.1.0/24 lookup main priority 2500";
+    };
+  };
 }
